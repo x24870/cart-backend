@@ -10,6 +10,8 @@ import (
 
 	"cart-backend/internal/adapter"
 	"cart-backend/internal/app/api"
+	"cart-backend/internal/domain/account"
+	txrecord "cart-backend/internal/domain/tx_record"
 	"cart-backend/internal/service"
 	"cart-backend/pkg/app"
 	"cart-backend/pkg/log"
@@ -62,6 +64,16 @@ func main() {
 	)
 	if err != nil {
 		logger.Error("connect to database error", zap.Error(err))
+		return
+	}
+
+	// migrate db
+	err = db.AutoMigrate(
+		&account.Account{},
+		&txrecord.TxRecord{},
+	)
+	if err != nil {
+		logger.Error("migrate db error", zap.Error(err))
 		return
 	}
 
