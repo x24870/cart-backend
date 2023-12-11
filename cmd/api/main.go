@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"cart-backend/internal/adapter"
@@ -19,6 +21,15 @@ import (
 )
 
 func main() {
+	// sleep 1s to wait for db
+	time.Sleep(1 * time.Second)
+
+	// load env
+	err := LoadEnvConfig(".env")
+	if err != nil {
+		panic(fmt.Errorf("failed to load config: %v", err))
+	}
+
 	// init logger
 	sync, err := log.Init(log.Config{
 		Name:   "cart-backend.api",
@@ -38,6 +49,7 @@ func main() {
 	// init db
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
+	logger.Info("dsn", zap.String("dsn", dsn))
 
 	db, err := gormpkg.NewGormPostgresConn(
 		gormpkg.Config{
@@ -63,11 +75,39 @@ func main() {
 	)
 
 	app := api.New(api.Config{
-		Port:    80,
+		Port:    8080,
 		Service: svc,
 	})
 	err = app.Start(ctx)
 	if err != nil {
 		logger.Fatal("app.Start", zap.Error(err))
 	}
+}
+
+func LoadEnvConfig(filename string) error {
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		parts := strings.SplitN(line, "=", 2)
+
+		// if starts with #, skip
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		if len(parts) != 2 {
+			return fmt.Errorf("%s invalid line: %s", filename, line)
+		}
+		key := parts[0]
+		value := parts[1]
+		os.Setenv(key, value) // set as environment variable
+	}
+
+	return scanner.Err()
 }

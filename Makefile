@@ -20,7 +20,7 @@ docker-compose:
 	docker-compose -f docker-compose.yaml up
 
 build-image:
-	docker build --build-arg ENV=$(env) -f dockerfile-bot -t $(IMAGE) .
+	docker build --build-arg ENV=$(env) -f dockerfile -t $(IMAGE) .
 	docker tag $(IMAGE) $(GCR_HOSTNAME)/$(GCP_PROJECT_ID)/$(IMAGE):$(LATEST_TAG)
 
 

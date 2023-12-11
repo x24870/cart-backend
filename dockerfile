@@ -15,12 +15,12 @@ RUN go mod download
 COPY . .
 
 # Build the Go app
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cart-backend cmd/bot/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cart-backend cmd/api/main.go
 
 # Final Stage
 FROM alpine
 # Copy both env files into the image first
-COPY config/.env.prod ./config/.env.prod
+COPY .env.dev .env
 
 # Ensure you copy the binary with the correct name
 COPY --from=builder /app/cart-backend /app/cart-backend
