@@ -11,6 +11,6 @@ type Account struct {
 }
 
 type Repository interface {
-	CreateIfNotExists(ctx context.Context, account *Account) error
+	FirstOrCreate(ctx context.Context, address string) (*Account, error)
 	GetByAddress(ctx context.Context, address string) (*Account, error)
 }

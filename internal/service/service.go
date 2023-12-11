@@ -7,7 +7,8 @@ import (
 )
 
 type Service interface {
-	List(ctx context.Context, address string) ([]account.Account, error)
+	Create(ctx context.Context, txRecord *txrecord.TxRecord) error
+	List(ctx context.Context, address string) (*[]txrecord.TxRecord, error)
 }
 
 type service struct {
@@ -25,9 +26,26 @@ func NewService(
 	}
 }
 
-func (s *service) List(ctx context.Context, address string) ([]account.Account, error) {
+type CreateTxRecordReq struct {
+	Address     string `json:"address"`
+	ProjectName string `json:"project_name"`
+}
+
+func (s *service) Create(ctx context.Context, txRecord *txrecord.TxRecord) error {
+	var err error
+	if _, err = s.accountRepo.FirstOrCreate(ctx, *txRecord.Address); err != nil {
+		return err
+	}
+	if err := s.txRecordRepo.Create(ctx, txRecord); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *service) List(ctx context.Context, address string) (*[]txrecord.TxRecord, error) {
 	// return s.repo.List(ctx)
-	return nil, nil
+	return s.txRecordRepo.ListByAddress(ctx, address)
 }
 
 // func (s *service) Execute(ctx context.Context, lambdaName string, input []byte) ([]byte, error) {

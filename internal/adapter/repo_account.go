@@ -15,10 +15,20 @@ func NewAccountRepo(db *gorm.DB) account.Repository {
 	return &accountRepo{db: db}
 }
 
-func (r *accountRepo) CreateIfNotExists(ctx context.Context, account *account.Account) error {
-	return nil
+func (r *accountRepo) FirstOrCreate(ctx context.Context, address string) (*account.Account, error) {
+	var account account.Account
+	err := r.db.WithContext(ctx).Where("address = ?", address).FirstOrCreate(&account).Error
+	if err != nil {
+		return nil, err
+	}
+	return &account, nil
 }
 
 func (r *accountRepo) GetByAddress(ctx context.Context, address string) (*account.Account, error) {
-	return nil, nil
+	var account account.Account
+	err := r.db.WithContext(ctx).Where("address = ?", address).First(&account).Error
+	if err != nil {
+		return nil, err
+	}
+	return &account, nil
 }
