@@ -49,30 +49,18 @@ func main() {
 		},
 	)
 	if err != nil {
-		// logging.NewLoggerTag("gormpkg.NewGormPostgresConn").Error("connect to database error: %v", err)
 		logger.Error("connect to database error", zap.Error(err))
 		return
 	}
 
 	// prepare service
-	// runtimeV8 := adapter.NewRuntimeV8()
-	// // repo := adapter.NewFSRepository("./lambda")
 	accountRepo := adapter.NewAccountRepo(db)
 	txRecordRepo := adapter.NewTxRecordRepo(db)
-	// repo := adapter.NewIPFSRepository(
-	// 	"http://localhost:5001",
-	// 	"QmRQgLcZAzbEZN6mhwEySmw2baqFAh1tsoMFxvia82ENPd",
-	// )
+
 	svc := service.NewService(
 		accountRepo,
 		txRecordRepo,
 	)
-	// svc := service.NewService(
-	// 	repo,
-	// 	map[domain.RuntimeType]domain.Runtime{
-	// 		domain.RuntimeTypeV8: runtimeV8,
-	// 	},
-	// )
 
 	app := api.New(api.Config{
 		Port:    80,
