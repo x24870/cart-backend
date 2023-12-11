@@ -2,9 +2,9 @@ package handler
 
 import (
 	"cart-backend/internal/service"
-	"context"
-	"encoding/json"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
@@ -15,16 +15,34 @@ func NewHandler(service service.Service) *Handler {
 	return &Handler{service}
 }
 
-func (h *Handler) ListTxRecordByAddress(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	address := r.URL.Query().Get("address")
-	if address == "" {
-		http.Error(w, "address is required", http.StatusBadRequest)
+func (h *Handler) CreateTxRecord(ctx gin.Context) {
+	var req service.CreateRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	txRecords, err := h.service.List(ctx, address)
+
+	resp, err := h.service.Create(ctx.Request.Context(), req)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	json.NewEncoder(w).Encode(txRecords)
+
+	ctx.JSON(http.StatusOK, resp)
+}
+
+func (h *Handler) ListTxRecordByAddress(ctx gin.Context) {
+	var req service.ListRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	txRecords, err := h.service.List(ctx.Request.Context(), req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, txRecords)
 }
