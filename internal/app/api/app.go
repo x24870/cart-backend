@@ -1,6 +1,7 @@
 package api
 
 import (
+	"cart-backend/internal/service"
 	"context"
 	"fmt"
 	"net/http"
@@ -8,13 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	paramLambdaName = "lambda_name"
-)
-
 type Config struct {
-	Port int
-	// Service svc.Service
+	Port    int
+	Service service.Service
 }
 
 func New(config Config) *App {
