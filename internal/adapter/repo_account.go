@@ -17,7 +17,8 @@ func NewAccountRepo(db *gorm.DB) account.Repository {
 
 func (r *accountRepo) FirstOrCreate(ctx context.Context, address string) (*account.Account, error) {
 	var account account.Account
-	err := r.db.WithContext(ctx).Where("address = ?", address).FirstOrCreate(&account).Error
+	account.Address = address
+	err := r.db.Debug().WithContext(ctx).Where("address = ?", address).FirstOrCreate(&account).Error
 	if err != nil {
 		return nil, err
 	}

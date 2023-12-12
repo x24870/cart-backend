@@ -12,6 +12,7 @@ import (
 	"cart-backend/internal/app/api"
 	"cart-backend/internal/domain/account"
 	txrecord "cart-backend/internal/domain/tx_record"
+	"cart-backend/internal/handler"
 	"cart-backend/internal/service"
 	"cart-backend/pkg/app"
 	"cart-backend/pkg/log"
@@ -87,9 +88,12 @@ func main() {
 		txRecordRepo,
 	)
 
+	hdlr := handler.NewHandler(svc)
+
 	app := api.New(api.Config{
-		Port:    8080,
-		Service: svc,
+		Port: 8080,
+		// Service: svc,
+		Handler: hdlr,
 	})
 	err = app.Start(ctx)
 	if err != nil {

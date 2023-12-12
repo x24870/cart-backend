@@ -4,6 +4,7 @@ import (
 	"cart-backend/internal/domain/account"
 	txrecord "cart-backend/internal/domain/tx_record"
 	"context"
+	"fmt"
 )
 
 type Service interface {
@@ -41,6 +42,9 @@ type CreateResponse struct {
 func (s *service) Create(ctx context.Context, req CreateRequest) (*CreateResponse, error) {
 	var err error
 	var account *account.Account
+
+	fmt.Println("req.Address", req.Address)
+
 	if account, err = s.accountRepo.FirstOrCreate(ctx, req.Address); err != nil {
 		return nil, err
 	}

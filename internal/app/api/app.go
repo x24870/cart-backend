@@ -1,7 +1,7 @@
 package api
 
 import (
-	"cart-backend/internal/service"
+	"cart-backend/internal/handler"
 	"cart-backend/pkg/api/middlewares"
 	"context"
 	"fmt"
@@ -11,8 +11,9 @@ import (
 )
 
 type Config struct {
-	Port    int
-	Service service.Service
+	Port int
+	// Service service.Service
+	Handler handler.Handler
 }
 
 func New(config Config) *App {
@@ -45,6 +46,15 @@ func (a *App) Start(ctx context.Context) error {
 	router.GET("/ping", func(c *gin.Context) {
 		c.String(200, "pong")
 	})
+
+	router.POST("/tx_record", a.Handler.CreateTxRecord)
+	router.POST("/tx_record/list", a.Handler.ListTxRecordByAddress)
+
+	// curl example:
+	// curl -X POST -H "Content-Type: application/json" -d '{"address":"0x1234567890123456789012345678901234567890","project_name":"rysk","url":"https://rysk.fi","amount":"10","symbol":"USDC"}' http://localhost:8080/tx_record
+	// curl -X POST -H "Content-Type: application/json" -d '{"address":"0x1234567890123456789012345678901234567890","project_name":"rysk","url":"https://rysk.fi","amount":"10","symbol":"USDC"}' http://localhost:8080/tx_record | jq
+	// curl -X POST -H "Content-Type: application/json" -d '{"address":"0x1234567890123456789012345678901234567890"}' http://localhost:8080/tx_record/list
+	// curl -X POST -H "Content-Type: application/json" -d '{"address":"0x1234567890123456789012345678901234567890"}' http://localhost:8080/tx_record/list | jq
 
 	// Setup HTTP Server
 	server := &http.Server{

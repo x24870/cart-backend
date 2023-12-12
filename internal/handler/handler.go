@@ -11,11 +11,11 @@ type Handler struct {
 	service service.Service
 }
 
-func NewHandler(service service.Service) *Handler {
-	return &Handler{service}
+func NewHandler(service service.Service) Handler {
+	return Handler{service}
 }
 
-func (h *Handler) CreateTxRecord(ctx gin.Context) {
+func (h *Handler) CreateTxRecord(ctx *gin.Context) {
 	var req service.CreateRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -31,7 +31,7 @@ func (h *Handler) CreateTxRecord(ctx gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
-func (h *Handler) ListTxRecordByAddress(ctx gin.Context) {
+func (h *Handler) ListTxRecordByAddress(ctx *gin.Context) {
 	var req service.ListRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
