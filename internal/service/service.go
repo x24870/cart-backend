@@ -46,7 +46,7 @@ func (s *service) Create(ctx context.Context, req CreateRequest) (*CreateRespons
 	}
 
 	var txRecord txrecord.TxRecord
-	txRecord.Account = *account
+	txRecord.Address = account.Address
 	txRecord.ProjectName = req.ProjectName
 	txRecord.Url = req.Url
 	txRecord.Amount = req.Amount
@@ -91,7 +91,7 @@ func (s *service) List(ctx context.Context, req ListRequest) (*ListResponse, err
 
 func txRecordToResponse(t txrecord.TxRecord) txRecord {
 	return txRecord{
-		Address:     t.Account.Address,
+		Address:     t.Address,
 		ProjectName: t.ProjectName,
 		Url:         t.Url,
 		Amount:      t.Amount,

@@ -14,3 +14,8 @@ type Repository interface {
 	FirstOrCreate(ctx context.Context, address string) (*Account, error)
 	GetByAddress(ctx context.Context, address string) (*Account, error)
 }
+
+// table name
+func (Account) TableName() string {
+	return "account"
+}

@@ -2,6 +2,7 @@ package api
 
 import (
 	"cart-backend/internal/service"
+	"cart-backend/pkg/api/middlewares"
 	"context"
 	"fmt"
 	"net/http"
@@ -37,9 +38,9 @@ func (a *App) Start(ctx context.Context) error {
 	router.UnescapePathValues = true
 	router.ContextWithFallback = true
 
-	// router.Use(middlewares.PanicCatcher)
+	// router.Use(middlewares.PaniwcCatcher)
 	// router.Use(cors.Default())
-	// router.Use(middlewares.CtxLogger)
+	router.Use(middlewares.CtxLogger)
 
 	router.GET("/ping", func(c *gin.Context) {
 		c.String(200, "pong")

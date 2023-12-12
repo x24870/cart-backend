@@ -35,9 +35,10 @@ func main() {
 	// init logger
 	sync, err := log.Init(log.Config{
 		Name:   "cart-backend.api",
-		Level:  zapcore.InfoLevel,
+		Level:  zapcore.DebugLevel,
 		Stdout: true,
-		File:   "log/cart-backend/api.log",
+		// File:   "log/cart-backend/api.log",
+		File: "",
 	})
 	if err != nil {
 		panic(err)
