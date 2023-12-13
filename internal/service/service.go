@@ -33,6 +33,7 @@ type CreateRequest struct {
 	Url         string `json:"url"`
 	Amount      string `json:"amount"`
 	Symbol      string `json:"symbol"`
+	Signature   string `json:"signature"`
 }
 
 type CreateResponse struct {
@@ -55,6 +56,7 @@ func (s *service) Create(ctx context.Context, req CreateRequest) (*CreateRespons
 	txRecord.Url = req.Url
 	txRecord.Amount = req.Amount
 	txRecord.Symbol = req.Symbol
+	txRecord.Signature = req.Signature
 	if err = s.txRecordRepo.Create(ctx, &txRecord); err != nil {
 		return nil, err
 	}
@@ -72,6 +74,7 @@ type txRecord struct {
 	Url         string `gorm:"column:url;type:varchar(2048)" json:"url"`
 	Amount      string `gorm:"column:amount;type:varchar(255)" json:"amount"`
 	Symbol      string `gorm:"column:symbol;type:varchar(255)" json:"symbol"`
+	Signature   string `gorm:"column:signature;type:varchar(255)" json:"signature"`
 }
 
 type ListResponse struct {
@@ -100,5 +103,6 @@ func txRecordToResponse(t txrecord.TxRecord) txRecord {
 		Url:         t.Url,
 		Amount:      t.Amount,
 		Symbol:      t.Symbol,
+		Signature:   t.Signature,
 	}
 }
