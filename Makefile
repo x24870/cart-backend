@@ -28,7 +28,7 @@ build-image:
 push-service: configure-docker build-image
 	@echo "Pushing Service Docker image to GCR..."
 	docker tag $(IMAGE) $(GCR_HOSTNAME)/$(GCP_PROJECT_ID)/$(IMAGE):$(LATEST_TAG)
-	docker push $(GCR_HOSTNAME)/$(GCP_PROJECT_ID)/$(IMAGE):$(TAG)
+	docker push $(GCR_HOSTNAME)/$(GCP_PROJECT_ID)/$(IMAGE):$(LATEST_TAG)
 
 # Authenticate Docker to GCR
 configure-docker:

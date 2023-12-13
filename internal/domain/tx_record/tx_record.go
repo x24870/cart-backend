@@ -8,12 +8,12 @@ import (
 // TxRecord ...
 type TxRecord struct {
 	domain.Base
-	Address     string `gorm:"column:address;type:varchar(42);index;reference:Address" json:"address"` // Adjusted for FK relationship
-	ProjectName string `gorm:"column:project_name;type:varchar(255)" json:"project_name"`
-	Url         string `gorm:"column:url;type:varchar(2048)" json:"url"`
-	Amount      string `gorm:"column:amount;type:varchar(255)" json:"amount"`
-	Symbol      string `gorm:"column:symbol;type:varchar(255)" json:"symbol"`
-	Signature   string `gorm:"column:signature;type:varchar(255)" json:"signature"`
+	Address     string `gorm:"column:address;type:varchar(42);index;reference:Address"` // Adjusted for FK relationship
+	ProjectName string `gorm:"column:project_name;type:varchar(255)"`
+	Url         string `gorm:"column:url;type:varchar(2048)"`
+	Amount      string `gorm:"column:amount;type:varchar(255)"`
+	Symbol      string `gorm:"column:symbol;type:varchar(255)"`
+	Signature   string `gorm:"column:signature;type:varchar(255)"`
 }
 
 type Repository interface {

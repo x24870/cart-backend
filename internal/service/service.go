@@ -69,12 +69,12 @@ type ListRequest struct {
 }
 
 type txRecord struct {
-	Address     string `gorm:"column:address;type:varchar(42)" json:"address"`
-	ProjectName string `gorm:"column:project_name;type:varchar(255)" json:"project_name"`
-	Url         string `gorm:"column:url;type:varchar(2048)" json:"url"`
-	Amount      string `gorm:"column:amount;type:varchar(255)" json:"amount"`
-	Symbol      string `gorm:"column:symbol;type:varchar(255)" json:"symbol"`
-	Signature   string `gorm:"column:signature;type:varchar(255)" json:"signature"`
+	Address     string `gorm:"column:address;type:varchar(42)"`
+	ProjectName string `gorm:"column:project_name;type:varchar(255)"`
+	Url         string `gorm:"column:url;type:varchar(2048)"`
+	Amount      string `gorm:"column:amount;type:varchar(255)"`
+	Symbol      string `gorm:"column:symbol;type:varchar(255)"`
+	Signature   string `gorm:"column:signature;type:varchar(255)"`
 }
 
 type ListResponse struct {
