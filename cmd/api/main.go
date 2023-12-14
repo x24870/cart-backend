@@ -91,7 +91,7 @@ func main() {
 	hdlr := handler.NewHandler(svc)
 
 	app := api.New(api.Config{
-		Port: 8080,
+		Port: 443, // TODO: use env
 		// Service: svc,
 		Handler: hdlr,
 	})

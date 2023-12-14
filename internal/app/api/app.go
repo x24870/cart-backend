@@ -4,10 +4,13 @@ import (
 	"cart-backend/internal/handler"
 	"cart-backend/pkg/api/middlewares"
 	"context"
+	"crypto/tls"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 type Config struct {
@@ -60,8 +63,28 @@ func (a *App) Start(ctx context.Context) error {
 		Handler: router,
 	}
 
+	// Let's Encrypt tls certificate
+	m := autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist("api.innovatechain.xyz"),
+		Cache:      autocert.DirCache("/var/www/.cache"),
+	}
+	server.TLSConfig = &tls.Config{GetCertificate: m.GetCertificate}
+
 	// Start Running HTTP Server.
-	go server.ListenAndServe()
+	// go server.ListenAndServe()
+
+	go func() {
+		// Serve HTTP, which will redirect to HTTPS
+		h := m.HTTPHandler(nil)
+		log.Fatal(http.ListenAndServe(":http", h))
+	}()
+
+	// Start HTTPS server
+	go func() {
+		log.Fatal(server.ListenAndServeTLS("", "")) // Key and cert are coming from Let's Encrypt
+	}()
+
 	<-ctx.Done()
 	return server.Shutdown(ctx)
 }
