@@ -4,7 +4,6 @@ import (
 	"cart-backend/internal/domain/account"
 	t "cart-backend/internal/domain/transaction"
 	"context"
-	"fmt"
 )
 
 type Service interface {
@@ -28,13 +27,51 @@ func NewService(
 }
 
 type CreateRequest struct {
-	Address     string `json:"address"`
-	Hash        string `json:"hash"`
-	ProjectName string `json:"project_name"`
-	Url         string `json:"url"`
-	Amount      string `json:"amount"`
-	Symbol      string `json:"symbol"`
-	Signature   string `json:"signature"`
+	Address    string `json:"address"`
+	Hash       string `json:"hash"`
+	Signature  string `json:"signature"`
+	Operations []struct {
+		ProjectName string `json:"project_name"`
+		Url         string `json:"url"`
+		Amount      string `json:"amount"`
+		Symbol      string `json:"symbol"`
+		Intents     []struct {
+			Description string `json:"description"`
+		} `json:"intents"`
+	} `json:"operations"`
+}
+
+func createReqToTxRecord(req CreateRequest) t.TxRecord {
+	var txRecord t.TxRecord
+	txRecord.Account = req.Address
+	txRecord.Hash = req.Hash
+	txRecord.Signature = req.Signature
+	return txRecord
+}
+
+func createReqToOperations(req CreateRequest) []t.Operation {
+	var operations []t.Operation
+	for _, operation := range req.Operations {
+		var op t.Operation
+		op.ProjectName = operation.ProjectName
+		op.Url = operation.Url
+		op.Amount = operation.Amount
+		op.Symbol = operation.Symbol
+		operations = append(operations, op)
+	}
+	return operations
+}
+
+func createReqToIntents(req CreateRequest) []t.Intent {
+	var intents []t.Intent
+	for _, operation := range req.Operations {
+		for _, intent := range operation.Intents {
+			var it t.Intent
+			it.Description = intent.Description
+			intents = append(intents, it)
+		}
+	}
+	return intents
 }
 
 type CreateResponse struct {
@@ -42,20 +79,14 @@ type CreateResponse struct {
 }
 
 func (s *service) Create(ctx context.Context, req CreateRequest) (*CreateResponse, error) {
-	var err error
-	var account *account.Account
-
-	fmt.Println("req.Address", req.Address)
-
-	if account, err = s.accountRepo.FirstOrCreate(ctx, req.Address); err != nil {
+	if _, err := s.accountRepo.FirstOrCreate(ctx, req.Address); err != nil {
 		return nil, err
 	}
 
-	var tx t.TxRecord
-	tx.Account = account.Address
-	tx.Hash = req.Hash
-	tx.Signature = req.Signature
-	if err = s.txRecordRepo.Create(ctx, &tx); err != nil {
+	tx := createReqToTxRecord(req)
+	ops := createReqToOperations(req)
+	its := createReqToIntents(req)
+	if err := s.txRecordRepo.Create(ctx, &tx, &ops, &its); err != nil {
 		return nil, err
 	}
 

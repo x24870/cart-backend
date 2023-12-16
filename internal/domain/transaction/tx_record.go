@@ -16,11 +16,21 @@ type TxRecord struct {
 	Signature string `gorm:"column:signature;type:varchar(255)"`
 }
 
+func (TxRecord) TableName() string {
+	return "tx_record"
+}
+
 // Operation ...
 type Operation struct {
-	ID uuid.UUID `gorm:"column:id;type:uuid;primary_key;default:uuid_generate_v4()"`
-	Tx TxRecord  `gorm:"foreignKey:Hash;references:Hash"` // Foreign key relationship
+	ID          uuid.UUID `gorm:"column:id;type:uuid;primary_key;default:uuid_generate_v4()"`
+	Tx          TxRecord  `gorm:"foreignKey:Hash;references:Hash"` // Foreign key relationship
+	ProjectName string    `gorm:"column:project_name;type:varchar(255)"`
+	Url         string    `gorm:"column:url;type:varchar(2048)"`
 	common.Token
+}
+
+func (Operation) TableName() string {
+	return "operation"
 }
 
 // Intent ...
@@ -29,12 +39,11 @@ type Intent struct {
 	Description string    `gorm:"column:description;type:varchar(255)"`
 }
 
-type TxRecordRepo interface {
-	Create(ctx context.Context, txRecord *TxRecord) error
-	ListByAddress(ctx context.Context, address string) (*[]TxRecord, error)
+func (Intent) TableName() string {
+	return "intent"
 }
 
-// table name
-func (TxRecord) TableName() string {
-	return "tx_record"
+type TxRecordRepo interface {
+	Create(ctx context.Context, txRecord *TxRecord, ops *[]Operation, intents *[]Intent) error
+	ListByAddress(ctx context.Context, address string) (*[]TxRecord, error)
 }
