@@ -2,7 +2,7 @@ package service
 
 import (
 	"cart-backend/internal/domain/account"
-	txrecord "cart-backend/internal/domain/tx_record"
+	t "cart-backend/internal/domain/transaction"
 	"context"
 	"fmt"
 )
@@ -14,12 +14,12 @@ type Service interface {
 
 type service struct {
 	accountRepo  account.Repository
-	txRecordRepo txrecord.Repository
+	txRecordRepo t.TxRecordRepo
 }
 
 func NewService(
 	accountRepo account.Repository,
-	txRecordRepo txrecord.Repository,
+	txRecordRepo t.TxRecordRepo,
 ) Service {
 	return &service{
 		accountRepo:  accountRepo,
@@ -29,6 +29,7 @@ func NewService(
 
 type CreateRequest struct {
 	Address     string `json:"address"`
+	Hash        string `json:"hash"`
 	ProjectName string `json:"project_name"`
 	Url         string `json:"url"`
 	Amount      string `json:"amount"`
@@ -50,14 +51,11 @@ func (s *service) Create(ctx context.Context, req CreateRequest) (*CreateRespons
 		return nil, err
 	}
 
-	var txRecord txrecord.TxRecord
-	txRecord.Address = account.Address
-	txRecord.ProjectName = req.ProjectName
-	txRecord.Url = req.Url
-	txRecord.Amount = req.Amount
-	txRecord.Symbol = req.Symbol
-	txRecord.Signature = req.Signature
-	if err = s.txRecordRepo.Create(ctx, &txRecord); err != nil {
+	var tx t.TxRecord
+	tx.Account = account.Address
+	tx.Hash = req.Hash
+	tx.Signature = req.Signature
+	if err = s.txRecordRepo.Create(ctx, &tx); err != nil {
 		return nil, err
 	}
 
@@ -70,6 +68,7 @@ type ListRequest struct {
 
 type txRecord struct {
 	Address     string `gorm:"column:address;type:varchar(42)"`
+	Hash        string `gorm:"column:hash;type:varchar(255)"`
 	ProjectName string `gorm:"column:project_name;type:varchar(255)"`
 	Url         string `gorm:"column:url;type:varchar(2048)"`
 	Amount      string `gorm:"column:amount;type:varchar(255)"`
@@ -83,7 +82,7 @@ type ListResponse struct {
 
 func (s *service) List(ctx context.Context, req ListRequest) (*ListResponse, error) {
 	var err error
-	var txRecords *[]txrecord.TxRecord
+	var txRecords *[]t.TxRecord
 	if txRecords, err = s.txRecordRepo.ListByAddress(ctx, req.Address); err != nil {
 		return nil, err
 	}
@@ -96,13 +95,10 @@ func (s *service) List(ctx context.Context, req ListRequest) (*ListResponse, err
 	return &res, nil
 }
 
-func txRecordToResponse(t txrecord.TxRecord) txRecord {
+func txRecordToResponse(t t.TxRecord) txRecord {
 	return txRecord{
-		Address:     t.Address,
-		ProjectName: t.ProjectName,
-		Url:         t.Url,
-		Amount:      t.Amount,
-		Symbol:      t.Symbol,
-		Signature:   t.Signature,
+		Address:   t.Account,
+		Hash:      t.Hash,
+		Signature: t.Signature,
 	}
 }
