@@ -20,7 +20,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cart-backend cmd/api/main.
 # Final Stage
 FROM alpine
 # Copy both env files into the image first
-COPY .env.prod .env
+COPY .env.dev .env
 
 # expose port 80, 443 to the outside world
 EXPOSE 80

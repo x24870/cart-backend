@@ -69,10 +69,15 @@ func main() {
 		return
 	}
 
+	// create extension
+	db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
+
 	// migrate db
 	err = db.AutoMigrate(
 		&account.Account{},
 		&t.TxRecord{},
+		&t.Operation{},
+		&t.Intent{},
 	)
 	if err != nil {
 		logger.Error("migrate db error", zap.Error(err))

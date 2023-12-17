@@ -23,7 +23,8 @@ func (TxRecord) TableName() string {
 // Operation ...
 type Operation struct {
 	ID          uuid.UUID `gorm:"column:id;type:uuid;primary_key;default:uuid_generate_v4()"`
-	Tx          TxRecord  `gorm:"foreignKey:Hash;references:Hash"` // Foreign key relationship
+	TxHash      string    `gorm:"column:tx_hash;type:varchar(255);foreignKey;references:Hash"`
+	TxRecord    TxRecord  `gorm:"foreignKey:TxHash;references:Hash"`
 	ProjectName string    `gorm:"column:project_name;type:varchar(255)"`
 	Url         string    `gorm:"column:url;type:varchar(2048)"`
 	common.Token
@@ -35,7 +36,8 @@ func (Operation) TableName() string {
 
 // Intent ...
 type Intent struct {
-	Operation   Operation `gorm:"foreignKey:ID;references:ID"` // Foreign key relationship
+	OperationID uuid.UUID `gorm:"column:operation_id;type:uuid;foreignKey;references:ID"`
+	Operation   Operation `gorm:"foreignKey:OperationID;references:ID"` // Foreign key relationship
 	Description string    `gorm:"column:description;type:varchar(255)"`
 }
 
