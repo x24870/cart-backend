@@ -3,7 +3,7 @@ package common
 type Token struct {
 	Symbol  string `gorm:"column:symbol;type:varchar(255);"`
 	Amount  string `gorm:"column:amount;type:varchar(255);"`
-	Decimal uint   `gorm:"column:decimal;type:varchar(255);"`
+	Decimal uint   `gorm:"column:decimal;type:integer;"`
 }
 
 type Operation struct {

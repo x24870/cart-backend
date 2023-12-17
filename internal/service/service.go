@@ -4,6 +4,8 @@ import (
 	"cart-backend/internal/domain/account"
 	t "cart-backend/internal/domain/transaction"
 	"context"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 type Service interface {
@@ -33,8 +35,9 @@ type CreateRequest struct {
 	Operations []struct {
 		ProjectName string `json:"project_name"`
 		Url         string `json:"url"`
-		Amount      string `json:"amount"`
 		Symbol      string `json:"symbol"`
+		Amount      string `json:"amount"`
+		Decimal     uint   `json:"decimal"`
 		Intents     []struct {
 			Description string `json:"description"`
 		} `json:"intents"`
@@ -49,29 +52,28 @@ func createReqToTxRecord(req CreateRequest) t.TxRecord {
 	return txRecord
 }
 
-func createReqToOperations(req CreateRequest) []t.Operation {
+func createReqToOperations(req CreateRequest) ([]t.Operation, []t.Intent) {
 	var operations []t.Operation
+	var intents []t.Intent
 	for _, operation := range req.Operations {
 		var op t.Operation
+		op.ID = uuid.NewV4()
+		op.TxHash = req.Hash
 		op.ProjectName = operation.ProjectName
 		op.Url = operation.Url
 		op.Amount = operation.Amount
 		op.Symbol = operation.Symbol
+		op.Decimal = operation.Decimal
 		operations = append(operations, op)
-	}
-	return operations
-}
 
-func createReqToIntents(req CreateRequest) []t.Intent {
-	var intents []t.Intent
-	for _, operation := range req.Operations {
 		for _, intent := range operation.Intents {
 			var it t.Intent
+			it.OperationID = op.ID
 			it.Description = intent.Description
 			intents = append(intents, it)
 		}
 	}
-	return intents
+	return operations, intents
 }
 
 type CreateResponse struct {
@@ -84,8 +86,7 @@ func (s *service) Create(ctx context.Context, req CreateRequest) (*CreateRespons
 	}
 
 	tx := createReqToTxRecord(req)
-	ops := createReqToOperations(req)
-	its := createReqToIntents(req)
+	ops, its := createReqToOperations(req)
 	if err := s.txRecordRepo.Create(ctx, &tx, &ops, &its); err != nil {
 		return nil, err
 	}

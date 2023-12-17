@@ -17,10 +17,10 @@ func NewTxRecordRepo(db *gorm.DB) t.TxRecordRepo {
 }
 
 func (r *txRecordRepo) Create(
-	ctx context.Context, tx *t.TxRecord, ops *[]t.Operation, its *[]t.Intent,
+	ctx context.Context, t *t.TxRecord, ops *[]t.Operation, its *[]t.Intent,
 ) error {
 	if err := utils.Transactional(r.db, func(tx *gorm.DB) error {
-		if err := tx.WithContext(ctx).Create(tx).Error; err != nil {
+		if err := tx.WithContext(ctx).Create(&t).Error; err != nil {
 			return err
 		}
 		for _, op := range *ops {
