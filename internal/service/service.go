@@ -4,6 +4,7 @@ import (
 	"cart-backend/internal/domain/account"
 	t "cart-backend/internal/domain/transaction"
 	"context"
+	"fmt"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -14,34 +15,48 @@ type Service interface {
 }
 
 type service struct {
-	accountRepo  account.Repository
-	txRecordRepo t.TxRecordRepo
+	accountRepo   account.Repository
+	txRecordRepo  t.TxRecordRepo
+	operationRepo t.OperationRepo
+	intentRepo    t.IntentRepo
 }
 
 func NewService(
 	accountRepo account.Repository,
 	txRecordRepo t.TxRecordRepo,
+	operationRepo t.OperationRepo,
+	intentRepo t.IntentRepo,
 ) Service {
 	return &service{
-		accountRepo:  accountRepo,
-		txRecordRepo: txRecordRepo,
+		accountRepo:   accountRepo,
+		txRecordRepo:  txRecordRepo,
+		operationRepo: operationRepo,
+		intentRepo:    intentRepo,
 	}
 }
 
+type svcTxRecord struct {
+	Address    string         `json:"address"`
+	Hash       string         `json:"hash"`
+	Signature  string         `json:"signature"`
+	Operations []svcOperation `json:"operations"`
+}
+
+type svcOperation struct {
+	ProjectName string      `json:"project_name"`
+	Url         string      `json:"url"`
+	Symbol      string      `json:"symbol"`
+	Amount      string      `json:"amount"`
+	Decimal     uint        `json:"decimal"`
+	Intents     []svcIntent `json:"intents"`
+}
+
+type svcIntent struct {
+	Description string `json:"description"`
+}
+
 type CreateRequest struct {
-	Address    string `json:"address"`
-	Hash       string `json:"hash"`
-	Signature  string `json:"signature"`
-	Operations []struct {
-		ProjectName string `json:"project_name"`
-		Url         string `json:"url"`
-		Symbol      string `json:"symbol"`
-		Amount      string `json:"amount"`
-		Decimal     uint   `json:"decimal"`
-		Intents     []struct {
-			Description string `json:"description"`
-		} `json:"intents"`
-	} `json:"operations"`
+	svcTxRecord
 }
 
 func createReqToTxRecord(req CreateRequest) t.TxRecord {
@@ -98,37 +113,59 @@ type ListRequest struct {
 	Address string `json:"address"`
 }
 
-type txRecord struct {
-	Address     string `gorm:"column:address;type:varchar(42)"`
-	Hash        string `gorm:"column:hash;type:varchar(255)"`
-	ProjectName string `gorm:"column:project_name;type:varchar(255)"`
-	Url         string `gorm:"column:url;type:varchar(2048)"`
-	Amount      string `gorm:"column:amount;type:varchar(255)"`
-	Symbol      string `gorm:"column:symbol;type:varchar(255)"`
-	Signature   string `gorm:"column:signature;type:varchar(255)"`
-}
-
 type ListResponse struct {
-	TxRecords []txRecord `json:"tx_records"`
+	TxRecords []svcTxRecord `json:"tx_records"`
 }
 
 func (s *service) List(ctx context.Context, req ListRequest) (*ListResponse, error) {
 	var err error
 	var txRecords *[]t.TxRecord
+	var svcTxRecords []svcTxRecord
 	if txRecords, err = s.txRecordRepo.ListByAddress(ctx, req.Address); err != nil {
 		return nil, err
 	}
+	for _, txRecord := range *txRecords {
+		svcTxRecords = append(svcTxRecords, txRecordToResponse(txRecord))
+	}
+	fmt.Printf("svcTxRecords: %+v\n", svcTxRecords)
 
 	var res ListResponse
-	for _, txRecord := range *txRecords {
-		res.TxRecords = append(res.TxRecords, txRecordToResponse(txRecord))
+	for _, svcTx := range svcTxRecords {
+		var operations *[]t.Operation
+		if operations, err = s.operationRepo.ListByTxHash(ctx, svcTx.Hash); err != nil {
+			return nil, err
+		}
+
+		for _, operation := range *operations {
+			var svcOp svcOperation
+			svcOp.ProjectName = operation.ProjectName
+			svcOp.Url = operation.Url
+			svcOp.Amount = operation.Amount
+			svcOp.Symbol = operation.Symbol
+			svcOp.Decimal = operation.Decimal
+			fmt.Printf("svcOp: %+v\n", svcOp)
+
+			var intents *[]t.Intent
+			if intents, err = s.intentRepo.ListByOperationID(ctx, operation.ID); err != nil {
+				return nil, err
+			}
+
+			for _, intent := range *intents {
+				svcOp.Intents = append(svcOp.Intents, svcIntent{Description: intent.Description})
+				fmt.Printf("intent: %+v\n", intent)
+			}
+
+			svcTx.Operations = append(svcTx.Operations, svcOp)
+		}
+
+		res.TxRecords = append(res.TxRecords, svcTx)
 	}
 
 	return &res, nil
 }
 
-func txRecordToResponse(t t.TxRecord) txRecord {
-	return txRecord{
+func txRecordToResponse(t t.TxRecord) svcTxRecord {
+	return svcTxRecord{
 		Address:   t.Account,
 		Hash:      t.Hash,
 		Signature: t.Signature,

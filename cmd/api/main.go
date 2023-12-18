@@ -87,10 +87,14 @@ func main() {
 	// prepare service
 	accountRepo := adapter.NewAccountRepo(db)
 	txRecordRepo := adapter.NewTxRecordRepo(db)
+	operationRepo := adapter.NewOperationRepo(db)
+	intentRepo := adapter.NewIntentRepo(db)
 
 	svc := service.NewService(
 		accountRepo,
 		txRecordRepo,
+		operationRepo,
+		intentRepo,
 	)
 
 	hdlr := handler.NewHandler(svc)
