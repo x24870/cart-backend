@@ -4,7 +4,6 @@ import (
 	"cart-backend/internal/domain/account"
 	t "cart-backend/internal/domain/transaction"
 	"context"
-	"fmt"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -127,7 +126,6 @@ func (s *service) List(ctx context.Context, req ListRequest) (*ListResponse, err
 	for _, txRecord := range *txRecords {
 		svcTxRecords = append(svcTxRecords, txRecordToResponse(txRecord))
 	}
-	fmt.Printf("svcTxRecords: %+v\n", svcTxRecords)
 
 	var res ListResponse
 	for _, svcTx := range svcTxRecords {
@@ -143,7 +141,6 @@ func (s *service) List(ctx context.Context, req ListRequest) (*ListResponse, err
 			svcOp.Amount = operation.Amount
 			svcOp.Symbol = operation.Symbol
 			svcOp.Decimal = operation.Decimal
-			fmt.Printf("svcOp: %+v\n", svcOp)
 
 			var intents *[]t.Intent
 			if intents, err = s.intentRepo.ListByOperationID(ctx, operation.ID); err != nil {
@@ -152,7 +149,6 @@ func (s *service) List(ctx context.Context, req ListRequest) (*ListResponse, err
 
 			for _, intent := range *intents {
 				svcOp.Intents = append(svcOp.Intents, svcIntent{Description: intent.Description})
-				fmt.Printf("intent: %+v\n", intent)
 			}
 
 			svcTx.Operations = append(svcTx.Operations, svcOp)

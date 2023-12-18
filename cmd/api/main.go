@@ -99,9 +99,13 @@ func main() {
 
 	hdlr := handler.NewHandler(svc)
 
+	port := 80
+	if os.Getenv("ENV") == "prod" {
+		port = 443
+	}
+
 	app := api.New(api.Config{
-		Port: 80, // TODO: use env
-		// Service: svc,
+		Port:    port,
 		Handler: hdlr,
 	})
 	err = app.Start(ctx)

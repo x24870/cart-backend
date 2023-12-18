@@ -64,7 +64,7 @@ func (o *operationRepo) ListByTxHash(
 	ctx context.Context, txHash string,
 ) (*[]t.Operation, error) {
 	var operations []t.Operation
-	err := o.db.WithContext(ctx).Where("tx_hash = ?", txHash).Order("created_at desc").Find(&operations).Error
+	err := o.db.WithContext(ctx).Where("tx_hash = ?", txHash).Order("created_at").Find(&operations).Error
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (i *intentRepo) ListByOperationID(
 	ctx context.Context, operationID uuid.UUID,
 ) (*[]t.Intent, error) {
 	var intents []t.Intent
-	err := i.db.WithContext(ctx).Where("operation_id = ?", operationID).Order("created_at desc").Find(&intents).Error
+	err := i.db.WithContext(ctx).Where("operation_id = ?", operationID).Order("created_at").Find(&intents).Error
 	if err != nil {
 		return nil, err
 	}
