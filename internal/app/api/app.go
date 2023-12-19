@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/acme/autocert"
 )
@@ -43,8 +44,14 @@ func (a *App) Start(ctx context.Context) error {
 	router.UnescapePathValues = true
 	router.ContextWithFallback = true
 
+	// CORS
+	config := cors.DefaultConfig()
+	// config.AllowAllOrigins = true // adjust this to your needs
+	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
+	config.AllowOrigins = []string{"https://innovatechain.xyz", "https://api.innovatechain.xyz", "http://localhost:5173", "http://localhost:8080"}
+	router.Use(cors.New(config))
+
 	// router.Use(middlewares.PaniwcCatcher)
-	// router.Use(cors.Default())
 	router.Use(middlewares.CtxLogger)
 
 	router.GET("/ping", func(c *gin.Context) {
