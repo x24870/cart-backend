@@ -48,7 +48,13 @@ func (a *App) Start(ctx context.Context) error {
 	config := cors.DefaultConfig()
 	// config.AllowAllOrigins = true // adjust this to your needs
 	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
-	config.AllowOrigins = []string{"https://innovatechain.xyz", "https://api.innovatechain.xyz", "http://localhost:5173", "http://localhost:8080"}
+	config.AllowOrigins = []string{
+		"https://innovatechain.xyz",
+		"https://api.innovatechain.xyz",
+		"https://sharing.innovatechain.xyz",
+		"http://localhost:5173",
+		"http://localhost:8080",
+	}
 	router.Use(cors.New(config))
 
 	// router.Use(middlewares.PaniwcCatcher)
