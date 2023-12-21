@@ -14,6 +14,7 @@ type TxRecord struct {
 	Hash      string `gorm:"column:hash;type:varchar(255);primary_key"`
 	Account   string `gorm:"column:account;type:varchar(42);foreignKey;index;reference:Address"` // Adjusted for FK relationship
 	Signature string `gorm:"column:signature;type:varchar(255)"`
+	Kol       string `gorm:"column:kol;type:varchar(255)"`
 }
 
 func (TxRecord) TableName() string {

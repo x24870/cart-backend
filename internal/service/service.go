@@ -38,6 +38,7 @@ type svcTxRecord struct {
 	Address    string         `json:"address"`
 	Hash       string         `json:"hash"`
 	Signature  string         `json:"signature"`
+	Kol        string         `json:"kol"`
 	Operations []svcOperation `json:"operations"`
 }
 
@@ -63,6 +64,7 @@ func createReqToTxRecord(req CreateRequest) t.TxRecord {
 	txRecord.Account = req.Address
 	txRecord.Hash = req.Hash
 	txRecord.Signature = req.Signature
+	txRecord.Kol = req.Kol
 	return txRecord
 }
 
@@ -165,5 +167,6 @@ func txRecordToResponse(t t.TxRecord) svcTxRecord {
 		Address:   t.Account,
 		Hash:      t.Hash,
 		Signature: t.Signature,
+		Kol:       t.Kol,
 	}
 }
