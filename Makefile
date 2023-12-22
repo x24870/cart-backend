@@ -36,7 +36,7 @@ configure-docker:
 	gcloud auth configure-docker $(GCR_HOSTNAME)
 
 # Deploy the Docker image to a GCP VM
-deploy: push
+deploy:
 	@echo "Deploying Docker image to GCP VM..."
 	gcloud auth configure-docker $(GCR_HOSTNAME) && \
 	docker pull $(GCR_HOSTNAME)/$(GCP_PROJECT_ID)/$(IMAGE):$(LATEST_TAG) && \
