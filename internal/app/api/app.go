@@ -5,10 +5,8 @@ import (
 	"cart-backend/pkg/api/middlewares"
 	"context"
 	"crypto/tls"
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -67,23 +65,43 @@ func (a *App) Start(ctx context.Context) error {
 	router.POST("/tx_record", a.Handler.CreateTxRecord)
 	router.POST("/tx_record/list", a.Handler.ListTxRecordByAddress)
 
-	// Setup HTTP Server
-	server := &http.Server{
-		Addr:    fmt.Sprintf("0.0.0.0:%d", a.Port),
+	// Set up the HTTP server
+	httpServer := &http.Server{
+		Addr:    "0.0.0.0:80", // HTTP port
 		Handler: router,
 	}
 
 	// Let's Encrypt tls certificate
 	m := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist("api.innovatechain.xyz"),
+		HostPolicy: autocert.HostWhitelist("api.innovatechain.xyz", "api2.innovatechain.xyz"),
 		Cache:      autocert.DirCache("/var/www/.cache"),
 	}
-	server.TLSConfig = &tls.Config{GetCertificate: m.GetCertificate}
 
-	// Start Running HTTP Server.
-	if os.Getenv("ENV") == "dev" {
-		go server.ListenAndServe()
+	// Set up the HTTPS server
+	httpsServer := &http.Server{
+		Addr:      "0.0.0.0:443", // HTTPS port
+		Handler:   router,
+		TLSConfig: &tls.Config{GetCertificate: m.GetCertificate},
+	}
+	httpsServer.TLSConfig = &tls.Config{GetCertificate: m.GetCertificate}
+
+	// Start Running Server.
+	serveBothHttpAndHttps := true
+	if serveBothHttpAndHttps {
+		// Start the HTTP server in a new goroutine
+		go func() {
+			if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Fatalf("ListenAndServe error: %v", err)
+			}
+		}()
+
+		// Start the HTTPS server in a new goroutine
+		go func() {
+			if err := httpsServer.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
+				log.Fatalf("ListenAndServeTLS error: %v", err)
+			}
+		}()
 	} else {
 		go func() {
 			// Serve HTTP, which will redirect to HTTPS
@@ -93,10 +111,18 @@ func (a *App) Start(ctx context.Context) error {
 
 		// Start HTTPS server
 		go func() {
-			log.Fatal(server.ListenAndServeTLS("", "")) // Key and cert are coming from Let's Encrypt
+			log.Fatal(httpsServer.ListenAndServeTLS("", "")) // Key and cert are coming from Let's Encrypt
 		}()
 	}
 
 	<-ctx.Done()
-	return server.Shutdown(ctx)
+	// Shutdown both HTTP and HTTPS servers
+	if err := httpServer.Shutdown(ctx); err != nil {
+		log.Fatal("HTTP Server Shutdown:", err)
+	}
+	if err := httpsServer.Shutdown(ctx); err != nil {
+		log.Fatal("HTTPS Server Shutdown:", err)
+	}
+
+	return nil
 }

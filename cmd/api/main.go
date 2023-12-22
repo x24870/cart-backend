@@ -101,7 +101,8 @@ func main() {
 
 	port := 80
 	if os.Getenv("ENV") == "prod" {
-		port = 443
+		// port = 443
+		port = 80
 	}
 
 	app := api.New(api.Config{

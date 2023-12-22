@@ -38,9 +38,8 @@ configure-docker:
 # Deploy the Docker image to a GCP VM
 deploy: push
 	@echo "Deploying Docker image to GCP VM..."
-	ssh $(VM_USER)@$(VM_IP) "\
-		gcloud auth configure-docker $(GCR_HOSTNAME) && \
-		docker pull $(GCR_HOSTNAME)/$(GCP_PROJECT_ID)/$(BOT_IMAGE):$(LATEST_TAG) && \
-		docker stop $(BOT_IMAGE) || true && \
-		docker rm $(BOT_IMAGE) || true && \
-		docker run -d --name $(BOT_IMAGE) -p 8080:8080 $(GCR_HOSTNAME)/$(GCP_PROJECT_ID)/$(BOT_IMAGE):$(LATEST_TAG)"
+	gcloud auth configure-docker $(GCR_HOSTNAME) && \
+	docker pull $(GCR_HOSTNAME)/$(GCP_PROJECT_ID)/$(IMAGE):$(LATEST_TAG) && \
+	docker stop $(IMAGE) || true && \
+	docker rm $(IMAGE) || true && \
+	docker run -d --name $(IMAGE) -v certs:/var/www/.cache -p 80:80 -p 443:443 $(GCR_HOSTNAME)/$(GCP_PROJECT_ID)/$(IMAGE):$(LATEST_TAG)
