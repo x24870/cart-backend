@@ -48,8 +48,13 @@ func (a *App) Start(ctx context.Context) error {
 	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
 	config.AllowOrigins = []string{
 		"https://innovatechain.xyz",
+		"http://innovatechain.xyz",
 		"https://api.innovatechain.xyz",
+		"http://api.innovatechain.xyz",
+		"https://api2.innovatechain.xyz",
+		"http://api2.innovatechain.xyz",
 		"https://sharing.innovatechain.xyz",
+		"http://sharing.innovatechain.xyz",
 		"http://localhost:5173",
 		"http://localhost:8080",
 	}
@@ -87,7 +92,7 @@ func (a *App) Start(ctx context.Context) error {
 	httpsServer.TLSConfig = &tls.Config{GetCertificate: m.GetCertificate}
 
 	// Start Running Server.
-	serveBothHttpAndHttps := true
+	serveBothHttpAndHttps := false
 	if serveBothHttpAndHttps {
 		// Start the HTTP server in a new goroutine
 		go func() {
